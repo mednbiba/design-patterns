@@ -9,8 +9,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-
+//Testing Abstract Factory,Singleton and Iterator Design Patterns
 public class Main {
+	
+
 
     public static void printMenu(String[] options){
         for (String option : options){
@@ -111,6 +113,7 @@ public class Main {
         		statement.setString(2, server.getRAM());
         		statement.setString(3, server.getHDD());
         		statement.setString(4, server.getClass().toString());
+        		
         		
         		int rowsInserted = statement.executeUpdate();
         		if(rowsInserted>0) {
