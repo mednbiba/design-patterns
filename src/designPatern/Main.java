@@ -1,0 +1,187 @@
+package designPatern;
+
+import java.util.Random;
+import java.util.Scanner;
+
+import static java.lang.System.exit;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+public class Main {
+
+    public static void printMenu(String[] options){
+        for (String option : options){
+            System.out.println(option);
+        }
+        
+        System.out.print("Choose your option : ");
+    }
+
+    public static void main(String[] args) {
+    	//String configs[];
+
+
+        String[] options = {"1- Test Abstract Factory PC ",
+                            "2- Test Abstract Factory Server",
+                            "3- Singleton JDBC Connection + Random Value ",
+                            "4- No Singleton JDBC Connection ",
+        };
+        try (Scanner scanner = new Scanner(System.in)) {
+			int option = 1;
+			while (option!=5){
+			    printMenu(options);
+			    try {
+			        option = scanner.nextInt();
+			        switch (option){
+			            case 1: option1(); break;
+			            case 2: option2(); break;
+			            case 3: option3();break;
+			            case 4: option4();break;
+			            case 5:exit(0);
+			        }
+			    }
+			    catch (Exception ex){
+			        System.out.println("Please enter an integer value between 1 and " + options.length);
+			        scanner.next();
+			    }
+			}
+		}
+    }
+
+// Options
+    private static void option1() {
+    	
+    	//Generate Dummy PC Instance
+    	Computer pc = ComputerFactory.getComputer(new PCFactory(randomGB(1,7),randomGB(64,500),randomHZ(1,5)));
+    	System.out.println("Random AbstractFactory PC Config::"+pc +"|| getClass()  : "+pc.getClass());
+    }
+    private static void option2() {
+    	//Generate Dummy Server Instance
+    	Computer server = ComputerFactory.getComputer(new ServerFactory(randomGB(32,512),randomGB(1000,6000),randomHZ(3,6)));
+    	System.out.println("Random AbstractFactory Server Config::"+server+"|| getClass(): " +server.getClass());
+       	System.out.println(server.getCPU());
+    }
+    private static void option3() {
+    	//Generate Random Type + Stores into Database
+    	int choice = randomchoice(1,2);
+    	if (choice==1) {
+    		Computer pc = ComputerFactory.getComputer(new PCFactory(randomGB(1,7),randomGB(64,500),randomHZ(1,5)));
+        	System.out.println("Randomize PC Config::"+pc +"|| getClass()  : "+pc.getClass());
+        	try (
+        			//Singleton JDBC Connection refer to SingletonConnection Class, Allows only one Instance of the connection to be made that closes after the first SQL Statement
+        			Connection conn = SingletonConnection.getCon()
+        			
+        			) {
+        		//SQL Query
+        		String sql = "INSERT INTO Configz (CPU,RAM,DISK,TYPE) VALUES (?,?,?,?)";
+        		PreparedStatement statement = conn.prepareStatement(sql);
+        		statement.setString(1, pc.getCPU());
+        		statement.setString(2, pc.getRAM());
+        		statement.setString(3, pc.getHDD());
+        		statement.setString(4, pc.getClass().toString());
+        		
+        		int rowsInserted = statement.executeUpdate();
+        		if(rowsInserted>0) {
+        			System.out.print("Done Inserting");
+        		}
+        	     
+        	    
+        	     
+        	} catch (SQLException ex) {
+        	    ex.printStackTrace();
+        	}
+        	
+    		
+    	}else {
+    		Computer server = ComputerFactory.getComputer(new ServerFactory(randomGB(32,512),randomGB(1000,6000),randomHZ(3,6)));
+        	System.out.println("Randomize Server Config::"+server+"|| getClass(): " +server.getClass());	
+        	try (
+        			//Singleton JDBC Connection refer to SingletonConnection Class, Allows only one Instance of the connection to be made that closes after the first SQL Statement
+        			Connection conn = SingletonConnection.getCon()
+        			
+        			
+        			) {
+        		//SQL Query 
+        		String sql = "INSERT INTO Configz (CPU,RAM,DISK,TYPE) VALUES (?,?,?,?)";
+        		PreparedStatement statement = conn.prepareStatement(sql);
+        		statement.setString(1, server.getCPU());
+        		statement.setString(2, server.getRAM());
+        		statement.setString(3, server.getHDD());
+        		statement.setString(4, server.getClass().toString());
+        		
+        		int rowsInserted = statement.executeUpdate();
+        		if(rowsInserted>0) {
+        			System.out.print("Done Inserting");
+        		}
+        	     
+        	    
+        	     
+        	} catch (SQLException ex) {
+        	    ex.printStackTrace();
+        	}
+     
+    	}
+    	
+    	
+    }
+    private static void option4() {
+    	//Creates new JDBC Connection each time,
+    	int choice = randomchoice(1,2);
+    	if (choice==1) {
+    		Computer pc = ComputerFactory.getComputer(new PCFactory(randomGB(1,7),randomGB(64,500),randomHZ(1,5)));
+        	System.out.println("Randomize PC Config::"+pc +"|| getClass()  : "+pc.getClass());
+        	Connection conn;
+        	final String url = "jdbc:mysql://localhost:3306/test";
+    		final String user = "root";
+    		final String pass = "";
+    		try {
+    			conn = (Connection) DriverManager.getConnection(url,user,pass);
+    			System.out.println(" New Database Connection Created : Logged to " + url + " as : " + user );
+    			String sql = "INSERT INTO Configz (CPU,RAM,DISK,TYPE) VALUES (?,?,?,?)";
+        		PreparedStatement statement = conn.prepareStatement(sql);
+        		statement.setString(1, pc.getCPU());
+        		statement.setString(2, pc.getRAM());
+        		statement.setString(3, pc.getHDD());
+        		statement.setString(4, pc.getClass().toString());
+        		
+        		int rowsInserted = statement.executeUpdate();
+        		conn.close();
+        		if(rowsInserted>0) {
+        			System.out.print("Done Inserting");
+        		}
+    		} catch (SQLException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
+    		
+    		
+    	}else {
+    		
+    	}
+    	
+    }
+    
+    private static String randomGB(int min,int max) {
+    	Random ran = new Random();
+    	int x = ran.nextInt(max) + min;
+    	 String s = Integer.toString(x) + " GB";
+    	 return s;
+    }
+    private static String randomHZ(float min,float max) {
+    	Random ran = new Random();
+    	float random = min + ran.nextFloat() * (max - min);
+    	 String s = Float.toString(random) + " GHz";
+    	 return s;
+    }
+    private static int randomchoice(int min,int max) {
+    	Random ran = new Random();
+    	int x = ran.nextInt(max) + min;
+
+    	 return x;
+    }
+   
+
+}
