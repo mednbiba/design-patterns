@@ -1,6 +1,6 @@
 package designPatern;
 
-import java.util.Random;
+
 import java.util.Scanner;
 
 import static java.lang.System.exit;
@@ -26,23 +26,59 @@ public class Main {
     	//String configs[];
 
 
-        String[] options = {"1- Test Abstract Factory PC ",
+        String[] options = {"----------------Abstract Factory-------------------------",
+        					"\n",
+        					"1- Test Abstract Factory PC ",
                             "2- Test Abstract Factory Server",
+                            "\n",
+                            "----------------Singleton-------------------------",
+                            "\n",
                             "3- Singleton JDBC Connection + Random Value ",
-                            "4- No Singleton JDBC Connection ",
+                            "4- None Singleton JDBC Connection + Random Value ",
+                            "\n",
+                            "----------------Iterator-------------------------",
+                            "\n",
+                            "5- Iterator for random PC Config Array ",
+                            "-------------------------------------------------",
+                            "\n",
+                            "6- Exit(0)"
         };
         try (Scanner scanner = new Scanner(System.in)) {
 			int option = 1;
-			while (option!=5){
+			while (option!=6){
 			    printMenu(options);
 			    try {
 			        option = scanner.nextInt();
 			        switch (option){
-			            case 1: option1(); break;
-			            case 2: option2(); break;
-			            case 3: option3();break;
-			            case 4: option4();break;
-			            case 5:exit(0);
+			            case 1: 
+			            	System.out.print("------------------------\n");
+			            	option1();
+			            	System.out.print("------------------------\n");
+			            	break;
+
+			            case 2:
+			            	System.out.print("------------------------\n");
+			            	option2();
+			            	System.out.print("------------------------\n");
+			            	break;
+			            	
+			            case 3: 
+			            	System.out.print("------------------------\n");
+			            	option3();
+			            	System.out.print("------------------------\n");
+			            	break;
+			            case 4:
+			            	System.out.print("------------------------\n");
+			            	option4();
+			            	System.out.print("------------------------\n");
+			            	break;
+			            case 5: 
+			            	System.out.print("------------------------\n");
+			            	option5(); 
+			            	System.out.print("------------------------\n");
+			            	break;
+			            	
+			            case 6:exit(0);
 			        }
 			    }
 			    catch (Exception ex){
@@ -57,20 +93,20 @@ public class Main {
     private static void option1() {
     	
     	//Generate Dummy PC Instance
-    	Computer pc = ComputerFactory.getComputer(new PCFactory(randomGB(1,7),randomGB(64,500),randomHZ(1,5)));
+    	Computer pc = ComputerFactory.getComputer(new PCFactory(randomGenerator.randomGB(1,7),randomGenerator.randomGB(64,500),randomGenerator.randomHZ(1,5)));
     	System.out.println("Random AbstractFactory PC Config::"+pc +"|| getClass()  : "+pc.getClass());
     }
     private static void option2() {
     	//Generate Dummy Server Instance
-    	Computer server = ComputerFactory.getComputer(new ServerFactory(randomGB(32,512),randomGB(1000,6000),randomHZ(3,6)));
+    	Computer server = ComputerFactory.getComputer(new ServerFactory(randomGenerator.randomGB(32,512),randomGenerator.randomGB(1000,6000),randomGenerator.randomHZ(3,6)));
     	System.out.println("Random AbstractFactory Server Config::"+server+"|| getClass(): " +server.getClass());
        	System.out.println(server.getCPU());
     }
     private static void option3() {
     	//Generate Random Type + Stores into Database
-    	int choice = randomchoice(1,2);
+    	int choice = randomGenerator.randomchoice(1,2);
     	if (choice==1) {
-    		Computer pc = ComputerFactory.getComputer(new PCFactory(randomGB(1,7),randomGB(64,500),randomHZ(1,5)));
+    		Computer pc = ComputerFactory.getComputer(new PCFactory(randomGenerator.randomGB(1,7),randomGenerator.randomGB(64,500),randomGenerator.randomHZ(1,5)));
         	System.out.println("Randomize PC Config::"+pc +"|| getClass()  : "+pc.getClass());
         	try (
         			//Singleton JDBC Connection refer to SingletonConnection Class, Allows only one Instance of the connection to be made that closes after the first SQL Statement
@@ -98,7 +134,7 @@ public class Main {
         	
     		
     	}else {
-    		Computer server = ComputerFactory.getComputer(new ServerFactory(randomGB(32,512),randomGB(1000,6000),randomHZ(3,6)));
+    		Computer server = ComputerFactory.getComputer(new ServerFactory(randomGenerator.randomGB(32,512),randomGenerator.randomGB(1000,6000),randomGenerator.randomHZ(3,6)));
         	System.out.println("Randomize Server Config::"+server+"|| getClass(): " +server.getClass());	
         	try (
         			//Singleton JDBC Connection refer to SingletonConnection Class, Allows only one Instance of the connection to be made that closes after the first SQL Statement
@@ -132,9 +168,9 @@ public class Main {
     }
     private static void option4() {
     	//Creates new JDBC Connection each time,
-    	int choice = randomchoice(1,2);
+    	int choice = randomGenerator.randomchoice(1,2);
     	if (choice==1) {
-    		Computer pc = ComputerFactory.getComputer(new PCFactory(randomGB(1,7),randomGB(64,500),randomHZ(1,5)));
+    		Computer pc = ComputerFactory.getComputer(new PCFactory(randomGenerator.randomGB(1,7),randomGenerator.randomGB(64,500),randomGenerator.randomHZ(1,5)));
         	System.out.println("Randomize PC Config::"+pc +"|| getClass()  : "+pc.getClass());
         	Connection conn;
         	final String url = "jdbc:mysql://localhost:3306/test";
@@ -166,25 +202,21 @@ public class Main {
     	}
     	
     }
+    private static void option5() {
+    	
+    	 ConfigRepository confRepository = new ConfigRepository();
+    	 System.out.println("Available Configurations list : \n");
+         System.out.println("-----------------------------------");
+         for(Iterator iter = confRepository.getIterator(); iter.hasNext();){
+            String configs = (String)iter.next();
+            System.out.println("Config : " + configs);
+            
+         } 	
+         System.out.println("-----------------------------------");
+    	
+    }
     
-    private static String randomGB(int min,int max) {
-    	Random ran = new Random();
-    	int x = ran.nextInt(max) + min;
-    	 String s = Integer.toString(x) + " GB";
-    	 return s;
-    }
-    private static String randomHZ(float min,float max) {
-    	Random ran = new Random();
-    	float random = min + ran.nextFloat() * (max - min);
-    	 String s = Float.toString(random) + " GHz";
-    	 return s;
-    }
-    private static int randomchoice(int min,int max) {
-    	Random ran = new Random();
-    	int x = ran.nextInt(max) + min;
 
-    	 return x;
-    }
    
 
 }
